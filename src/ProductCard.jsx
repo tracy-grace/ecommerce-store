@@ -1,33 +1,35 @@
-function ProductCard({ product, addToCart }) {
+import { useNavigate } from "react-router-dom";
+
+export default function ProductCard({ product, addToCart }) {
+    const navigate = useNavigate();
+
     return (
         <div
+            onClick={() => navigate(`/product/${product.id}`)}
             style={{
                 background: "white",
-                padding: "15px",
+                padding: "10px",
                 borderRadius: "10px",
-                textAlign: "center",
+                cursor: "pointer",
             }}
         >
             <img
                 src={product.image}
-                alt={product.name}
-                style={{
-                    width: "100%",
-                    height: "150px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                }}
+                style={{ width: "100%", height: "150px", objectFit: "cover" }}
             />
 
-            <h3>{product.name}</h3>
+            <h4>{product.name}</h4>
 
             <p>UGX {product.price.toLocaleString()}</p>
 
-            <button onClick={() => addToCart(product)}>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(product);
+                }}
+            >
                 Add to Cart
             </button>
         </div>
     );
 }
-
-export default ProductCard;

@@ -1,26 +1,29 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import "./App.css";
 
-function App() {
+export default function App() {
   const [cart, setCart] = useState(() => {
     return JSON.parse(localStorage.getItem("cart")) || [];
   });
 
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
 
   const products = [
     {
       id: 1,
-      name: "iPhone 14",
+      name: "iPhone 14 Pro",
       price: 3500000,
+      category: "Phones",
       image:
         "https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?auto=format&fit=crop&w=600&q=80",
     },
     {
       id: 2,
-      name: "MacBook Pro",
+      name: "MacBook Pro M2",
       price: 8500000,
+      category: "Laptops",
       image:
         "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
     },
@@ -28,6 +31,7 @@ function App() {
       id: 3,
       name: "Sony Headphones",
       price: 450000,
+      category: "Audio",
       image:
         "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
     },
@@ -35,14 +39,24 @@ function App() {
       id: 4,
       name: "Smart Watch",
       price: 600000,
+      category: "Wearables",
       image:
         "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
     },
   ];
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const categories = ["All", "Phones", "Laptops", "Audio", "Wearables"];
+
+  const filteredProducts = products.filter((p) => {
+    const matchSearch = p.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchCategory =
+      category === "All" || p.category === category;
+
+    return matchSearch && matchCategory;
+  });
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -80,61 +94,76 @@ function App() {
     }
   };
 
-  const clearCart = () => setCart([]);
-
-  const totalItems = cart.reduce(
-    (sum, i) => sum + i.quantity,
-    0
-  );
-
-  const totalPrice = cart.reduce(
+  const total = cart.reduce(
     (sum, i) => sum + i.price * i.quantity,
     0
   );
 
   return (
-    <div style={{ fontFamily: "Arial" }}>
-      {/* HEADER */}
+    <div style={{ fontFamily: "Arial", background: "#f4f4f4" }}>
+      {/* TOP BAR (Amazon style) */}
       <header
         style={{
+          background: "#131921",
+          color: "white",
+          padding: "15px",
           display: "flex",
           justifyContent: "space-between",
-          padding: "15px",
-          background: "#222",
-          color: "white",
+          alignItems: "center",
         }}
       >
-        <h2>My Store</h2>
+        <h2 style={{ color: "#ff9900" }}>MyStore</h2>
+
+        <input
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: "40%",
+            padding: "8px",
+            borderRadius: "5px",
+            border: "none",
+          }}
+        />
 
         <div>
-          Cart: {totalItems} | UGX{" "}
-          {totalPrice.toLocaleString()}
+          🛒 {cart.length} items | UGX{" "}
+          {total.toLocaleString()}
         </div>
       </header>
 
       {/* BODY */}
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          padding: "20px",
-        }}
-      >
-        {/* PRODUCTS */}
-        <div style={{ flex: 2 }}>
-          <input
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginBottom: "20px",
-            }}
-          />
+      <div style={{ display: "flex" }}>
+        {/* SIDEBAR (Jumia style) */}
+        <aside
+          style={{
+            width: "200px",
+            background: "white",
+            padding: "15px",
+            height: "100vh",
+          }}
+        >
+          <h3>Categories</h3>
 
+          {categories.map((c) => (
+            <p
+              key={c}
+              onClick={() => setCategory(c)}
+              style={{
+                cursor: "pointer",
+                fontWeight:
+                  category === c ? "bold" : "normal",
+                color:
+                  category === c ? "#ff9900" : "#333",
+              }}
+            >
+              {c}
+            </p>
+          ))}
+        </aside>
+
+        {/* PRODUCTS */}
+        <main style={{ flex: 2, padding: "20px" }}>
           <div
             style={{
               display: "grid",
@@ -143,7 +172,7 @@ function App() {
               gap: "15px",
             }}
           >
-            {filtered.map((p) => (
+            {filteredProducts.map((p) => (
               <ProductCard
                 key={p.id}
                 product={p}
@@ -151,42 +180,40 @@ function App() {
               />
             ))}
           </div>
-        </div>
+        </main>
 
-        {/* CART */}
-        <div
+        {/* CART (sidebar like Jumia/Amazon) */}
+        <aside
           style={{
-            flex: 1,
-            background: "#fff",
+            width: "300px",
+            background: "white",
             padding: "15px",
-            borderRadius: "10px",
-            height: "fit-content",
+            height: "100vh",
+            overflowY: "auto",
           }}
         >
-          <h2>Cart</h2>
-
-          <button onClick={clearCart}>
-            Clear Cart
-          </button>
-
-          <h3>
-            Total: UGX{" "}
-            {totalPrice.toLocaleString()}
-          </h3>
+          <h3>Cart</h3>
 
           {cart.length === 0 ? (
-            <p>No items in cart</p>
+            <p>No items yet</p>
           ) : (
             cart.map((item) => (
-              <div key={item.id}>
+              <div
+                key={item.id}
+                style={{
+                  borderBottom: "1px solid #eee",
+                  paddingBottom: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                <p>{item.name}</p>
                 <p>
-                  {item.name} × {item.quantity}
+                  {item.quantity} × UGX{" "}
+                  {item.price.toLocaleString()}
                 </p>
 
                 <button
-                  onClick={() =>
-                    addToCart(item)
-                  }
+                  onClick={() => addToCart(item)}
                 >
                   +
                 </button>
@@ -201,10 +228,8 @@ function App() {
               </div>
             ))
           )}
-        </div>
+        </aside>
       </div>
     </div>
   );
 }
-
-export default App;
